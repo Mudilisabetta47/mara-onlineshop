@@ -102,8 +102,20 @@ img { -webkit-user-drag: none; }
 .js [data-reveal="slide-right"] { transform: translate3d(64px, 0, 0); }
 .js [data-reveal="clip"] { opacity: 1; clip-path: inset(0 0 100% 0); }
 .js [data-reveal="mask"] { opacity: 1; clip-path: inset(0 100% 0 0); }
-.js [data-reveal].is-in { opacity: 1; transform: none; filter: none; clip-path: inset(0 0 0 0); }
-.js [data-reveal="clip"].is-in, .js [data-reveal="mask"].is-in { clip-path: inset(0 0 0 0); }
+.js [data-reveal].is-in { opacity: 1; transform: none; filter: none; }
+/*
+ * clip-path NUR für die Reveal-Typen clip/mask (Bilder). Ein clip-path auf Text-Reveals wäre fatal: die Zeilenhöhe der
+ * Headlines (0.94) ist kleiner als die Glyphen, inset(0) würde die Unterlängen von y, g, j, p, q abschneiden.
+ * Der Endzustand ist bewusst großzügig (negative Insets), damit auch Schatten/Überstände nie beschnitten werden.
+ */
+.js [data-reveal="clip"].is-in, .js [data-reveal="mask"].is-in { clip-path: inset(-30% -6% -30% -6%); }
+
+/*
+ * Wort-Masken (Headline-Wörter gleiten von unten ein): Die Maske (overflow:hidden) ist nur für den Einblend-Moment gedacht.
+ * Sobald der Reveal abgeschlossen ist (.is-done), wird sie freigegeben – sonst würden scrollgesteuerte Wortbewegungen
+ * (Hero) an der Oberkante der Maske abgeschnitten.
+ */
+.reveal-mask:has(> [data-reveal].is-done) { overflow: visible; }
 
 /* ───────── Reduced Motion: alles sichtbar, keine Sticky-Bühnen, kein Parallax ───────── */
 @media (prefers-reduced-motion: reduce) {

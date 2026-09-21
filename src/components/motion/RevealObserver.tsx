@@ -15,7 +15,12 @@ export function RevealObserver() {
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting || e.boundingClientRect.top < 0) {
-            e.target.classList.add("is-in");
+            const el = e.target as HTMLElement;
+            el.classList.add("is-in");
+            // Nach Ende der Einblend-Animation „is-done“ setzen: gibt Wort-Masken frei (.reveal-mask, siehe globals.css),
+            // damit spätere scrollgesteuerte Bewegungen nicht mehr an deren Rändern beschnitten werden.
+            const delay = parseFloat(el.style.getPropertyValue("--d")) || 0;
+            window.setTimeout(() => el.classList.add("is-done"), (delay + 1.3) * 1000);
             io.unobserve(e.target);
           }
         }

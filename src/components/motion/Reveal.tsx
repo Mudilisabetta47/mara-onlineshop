@@ -22,7 +22,7 @@ export function SplitWords({
   return (
     <Tag className={className} aria-label={text}>
       {text.split(" ").map((w, i) => (
-        <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.2em] -mb-[0.08em] align-bottom">
+        <span key={i} aria-hidden className="reveal-mask inline-block overflow-hidden pb-[0.2em] -mb-[0.08em] align-bottom">
           <span data-reveal="up" className="inline-block" style={{ "--d": `${(delay + i * step).toFixed(2)}s` } as CSSProperties}>
             {w}&nbsp;
           </span>

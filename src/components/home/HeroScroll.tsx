@@ -112,7 +112,7 @@ function Word({ children, p, i, delay, accent }: { children: string; p: MotionVa
   const o = useTransform(p, [0.28 + i * 0.05, 0.62 + i * 0.05], [1, 0]);
   const blur = useTransform(p, [0.4 + i * 0.05, 0.7 + i * 0.05], ["blur(0px)", "blur(10px)"]);
   return (
-    <span className="inline-block overflow-hidden pb-[0.2em] -mb-[0.1em] align-bottom">
+    <span className="reveal-mask inline-block overflow-hidden pb-[0.2em] -mb-[0.1em] align-bottom">
       <span data-reveal="up" className="inline-block" style={{ "--d": `${delay}s` } as React.CSSProperties}>
         <motion.span style={{ y, x, opacity: o, filter: blur }} className={`rm-none inline-block will-change-transform ${accent ? "text-rose-300" : ""}`}>
           {children}&nbsp;
