@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "images": "tsx scripts/generate-images.ts",
-    "test": "tsx --test src/lib/money.test.ts src/lib/coupons.test.ts src/lib/config.test.ts",
+    "test": "tsx --test src/lib/money.test.ts src/lib/coupons.test.ts src/lib/config.test.ts scripts/staging-seed.test.mjs",
     "e2e": "tsx --env-file=.env scripts/e2e.ts",
     "build:vercel": "node scripts/vercel-build.mjs",
     "db:status": "prisma migrate status",
@@ -24,7 +24,8 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:config": "tsx scripts/check-config.ts",
     "check:stripe": "tsx scripts/check-stripe.ts",
-    "logo": "node scripts/generate-logo.mjs"
+    "logo": "node scripts/generate-logo.mjs",
+    "seed:staging": "node scripts/staging-seed.mjs"
   },
   "prisma": {
     "seed": "tsx --env-file=.env prisma/seed/index.ts local"

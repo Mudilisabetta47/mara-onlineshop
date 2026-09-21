@@ -30,18 +30,22 @@ Arbeitsweise: Änderungen zuerst auf `staging` pushen und prüfen, dann `staging
 Alternativ zu Stripe: nach dem Login unter *Admin → Einstellungen* eine IBAN eintragen → „Vorkasse“ ist wählbar.
 Variablen aus `.env.example` (Admin-Passwort, `STORAGE_*`, `PAYPAL_*`, `MAIL_FROM` …) **nicht** übernehmen.
 
-## 3 · Datenbank einmalig füllen (auf deinem Rechner, Projektordner)
-Connection-Strings aus dem **Neon-Dashboard** kopieren (Vercel zeigt „Sensitive“-Werte nicht an). Nichts davon in den Chat/Repo.
+## 3 · Staging-Datenbank einmalig füllen (auf deinem Rechner)
+Ein Hilfsskript erledigt alles und fragt die Neon-URL **verdeckt** ab (nichts wird angezeigt, gespeichert oder an jemand anderen geschickt):
 ```bash
+git clone https://github.com/Mudilisabetta47/mara-onlineshop.git   # oder im vorhandenen Klon: git pull
+cd mara-onlineshop && git checkout staging
 npm install
-export APP_ENV=staging ALLOW_DEMO_SEED=1
-export DATABASE_URL='<Neon gepoolt>'  DIRECT_URL='<Neon direkt>'
-export ADMIN_EMAIL='deine@mail.de'  ADMIN_PASSWORD='<mind. 14 Zeichen, Groß/Klein/Ziffer>'
-npx prisma migrate deploy      # Tabellen (macht der Build auch)
-npm run db:seed:demo           # Kategorien + Demo-Produkte
-npm run db:seed:admin          # dein Admin-Zugang
-unset DATABASE_URL DIRECT_URL ADMIN_PASSWORD
+npm run seed:staging
 ```
+Das Skript
+1. fragt die **Neon-URL** ab: Neon-Konsole → dein Projekt → **Connect** → „Connection pooling“ **ausschalten** → Connection String kopieren (mit Passwort; Vercel zeigt „Sensitive“-Werte nicht an). Ein Pooler-Host wird automatisch auf die direkte Verbindung umgestellt.
+2. zeigt nur **Host und Datenbankname** und verlangt die Bestätigung „staging“. Es **verweigert** lokale Hosts, `lumi_shop` und Namen mit „prod/production“.
+3. prüft/wendet die **Migrationen** an, führt den **Demo-Seed** aus und legt den **Admin** an (E-Mail eingeben; Passwort verdeckt eingeben oder Enter für ein zufälliges).
+4. prüft in der Datenbank: Kategorien, Produkte, Varianten, Inventar, Admin.
+5. optional (Staging-URL eingeben): prüft `/api/health` und `/shop`. Bei Vercel Authentication (401) stattdessen im Browser öffnen.
+
+Danach ist im Shop sofort alles da (Seiten werden bis zu 60 Sekunden zwischengespeichert; bei leerer Ansicht kurz warten und neu laden).
 
 ## 4 · Öffnen
 Vercel → **Deployments** → Eintrag mit Branch **`staging`** (Kennzeichen *Preview*) → **Visit**.

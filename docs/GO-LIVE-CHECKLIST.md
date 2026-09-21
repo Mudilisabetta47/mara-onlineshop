@@ -40,7 +40,7 @@ Zweck: alles mit **Testschlüsseln** und **Testdaten** durchspielen, ohne die Li
 | S3 | Env-Variablen Scope *Preview* | ⬜ | Neon-Integration für **Preview** (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`), `APP_ENV=staging` (ohne Anführungszeichen), `CRON_SECRET`; `NEXT_PUBLIC_APP_URL` wird auf Previews abgeleitet (`openssl rand -hex 32`), Storage, Stripe-**Test**, PayPal-**Sandbox**, Resend, Upstash |
 | S4 | Staging-Bucket (privat) | ⬜ | S3/R2-Bucket + Schlüssel nur für diesen Bucket → `S3_*`. Danach prüfen: Bild hochladen (Admin), Testkauf → Rechnung öffnen (beides landet im Bucket) |
 | S5 | Erster Deploy + automatische Migration | 🟡 | Build-Skript vorbereitet (`migrate deploy` über `DIRECT_URL`). Erster Lauf offen |
-| S6 | Staging seeden | ⬜ | `db:seed:base`, `db:seed:admin` (starkes Passwort), optional `ALLOW_DEMO_SEED=1 db:seed:demo` |
+| S6 | Staging seeden | 🟡 | `npm run seed:staging` (Migrationen prüfen, Demo-Seed, Admin, Verifikation; Skript lokal gegen Wegwerf-DB getestet, gegen Neon noch nicht ausgeführt) |
 | S7 | Konfiguration prüfen | ⬜ | `npm run check:config` mit Staging-Werten; `/api/health?detail=1` (Bearer `CRON_SECRET`) ohne Fehler |
 | S8 | Stripe-Test-Webhook | ⬜ | Dashboard (Testmodus) → Webhook `https://staging…/api/webhooks/stripe`, Events `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded` → `STRIPE_WEBHOOK_SECRET` |
 | S9 | Stripe-Zahlungen testen | ⬜ | Karte `4242…` ✓, `4000 0027 6000 3184` (3DS) ✓, `4000 0000 0000 9995` ✗ (abgelehnt); Rücksprung schließen/Tab zumachen → Webhook setzt trotzdem „bezahlt“; Erstattung im Stripe-Dashboard → Shop-Status „Erstattet“. `npm run check:stripe` |
