@@ -53,6 +53,7 @@ Danach einloggen (`/login`), **Passwort ändern**, Anbieterdaten unter *Admin �
 
 ## 4 · Vercel
 
+0. **Branch-Modell:** `main` = Production (Build wird übersprungen, bis `ALLOW_PRODUCTION_DEPLOY=1` gesetzt ist), `staging` = Preview/Staging (siehe `docs/VERCEL-QUICKSTART.md`).
 1. Repository verbinden. **Root Directory: leer lassen** (die App liegt im Repo-Root). Framework: Next.js. Node 22.
 2. `vercel.json` setzt Build-Kommando, Region `fra1` und einen **täglichen** Cron (`0 3 * * *`, Hobby-kompatibel) für `/api/cron/expire-orders` (gibt Bestandsreservierungen unbezahlter Bestellungen frei; zusätzlich läuft die Freigabe bei jeder neuen Bestellung). **Für den Live-Betrieb auf Vercel Pro** den Zeitplan in `vercel.json` auf `*/10 * * * *` stellen – Hobby erlaubt nur tägliche Crons und **keine kommerzielle Nutzung**.
 3. Environment Variables je Scope eintragen: **Production** ← `.env.production.example`, **Preview** ← `.env.staging.example`. Preview *muss* eigene `DATABASE_URL`/`DIRECT_URL` haben (sonst bricht der Build ab – gewollt).

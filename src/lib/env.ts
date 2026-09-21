@@ -1,8 +1,8 @@
-import { appEnv } from "./config";
+import { appEnv, effectiveAppUrl } from "./config";
 
 /** Serverseitige Konfiguration. Secrets verlassen niemals den Server. */
 
-export const appUrl = () => (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+export const appUrl = () => effectiveAppUrl();
 export const shopName = () => process.env.NEXT_PUBLIC_SHOP_NAME || "Lilli und Lou";
 export const isProd = () => process.env.NODE_ENV === "production";
 

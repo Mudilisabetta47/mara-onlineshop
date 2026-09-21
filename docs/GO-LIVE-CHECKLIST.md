@@ -36,8 +36,8 @@ Zweck: alles mit **Testschlüsseln** und **Testdaten** durchspielen, ohne die Li
 | # | Punkt | Status | Was du konfigurieren musst |
 |---|---|---|---|
 | S1 | Staging-Datenbank (`shop_staging`) anlegen | ⬜ | Neon/Supabase-Projekt EU; **gepoolte** URL → `DATABASE_URL`, **direkte** → `DIRECT_URL` (beide `sslmode=require`). Nie dieselbe wie Production |
-| S2 | Vercel-Projekt anlegen | ⬜ | Repo verbinden, **Root Directory leer** (App im Repo-Root), Node 22, Pro-Plan (Cron, kommerziell) |
-| S3 | Env-Variablen Scope *Preview* | ⬜ | `APP_ENV=staging`, DB-URLs, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (`openssl rand -hex 32`), Storage, Stripe-**Test**, PayPal-**Sandbox**, Resend, Upstash |
+| S2 | Vercel-Projekt anlegen | 🟡 | Projekt ist angelegt (Root Directory leer). Branch `staging` = Preview/Staging, `main` = Production (gesperrt bis `ALLOW_PRODUCTION_DEPLOY=1`). Pro-Plan für Cron 10 min/kommerzielle Nutzung erst zum Livegang |
+| S3 | Env-Variablen Scope *Preview* | ⬜ | Neon-Integration für **Preview** (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`), `APP_ENV=staging` (ohne Anführungszeichen), `CRON_SECRET`; `NEXT_PUBLIC_APP_URL` wird auf Previews abgeleitet (`openssl rand -hex 32`), Storage, Stripe-**Test**, PayPal-**Sandbox**, Resend, Upstash |
 | S4 | Staging-Bucket (privat) | ⬜ | S3/R2-Bucket + Schlüssel nur für diesen Bucket → `S3_*`. Danach prüfen: Bild hochladen (Admin), Testkauf → Rechnung öffnen (beides landet im Bucket) |
 | S5 | Erster Deploy + automatische Migration | 🟡 | Build-Skript vorbereitet (`migrate deploy` über `DIRECT_URL`). Erster Lauf offen |
 | S6 | Staging seeden | ⬜ | `db:seed:base`, `db:seed:admin` (starkes Passwort), optional `ALLOW_DEMO_SEED=1 db:seed:demo` |

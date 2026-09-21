@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig, resolveDatabaseUrl } from "./config";
+import { validateConfig, resolveDatabaseUrl, parseAppEnv, resolveAppEnv, effectiveAppUrl } from "./config";
 
 const E = (o: Record<string, string | undefined>) => o as unknown as NodeJS.ProcessEnv;
 const prod = (o: Record<string, string | undefined> = {}): NodeJS.ProcessEnv => ({
@@ -69,4 +69,36 @@ test("resolveDatabaseUrl: lokale URL unverändert; Fallback auf POSTGRES_PRISMA_
 test("validateConfig akzeptiert die Vercel-Neon-Variablen (POSTGRES_URL statt DATABASE_URL)", () => {
   const r = validateConfig(prod({ DATABASE_URL: undefined, POSTGRES_URL: "postgresql://u:p@ep-x-pooler.eu.neon.tech/shop?sslmode=require" }));
   assert.ok(!r.errors.some((e) => e.includes("DATABASE_URL")));
+});
+
+test("APP_ENV wird tolerant gelesen (Anführungszeichen, Leerzeichen, Großschreibung)", () => {
+  for (const raw of ['"staging"', "'staging'", " Staging ", "STAGING", '"staging" ']) assert.equal(parseAppEnv(raw), "staging", raw);
+  assert.equal(parseAppEnv(""), undefined);
+  assert.equal(parseAppEnv("prod"), undefined);
+});
+test("VERCEL_ENV=production übersteuert ein gültiges APP_ENV=staging NICHT (Vorrang APP_ENV), warnt aber", () => {
+  const r = resolveAppEnv(E({ APP_ENV: "staging", VERCEL_ENV: "production" }));
+  assert.deepEqual(r, { env: "staging", source: "APP_ENV" });
+  assert.ok(validateConfig(prod({ APP_ENV: "staging", VERCEL_ENV: "production", STRIPE_SECRET_KEY: "sk_test_x", NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_x" })).warnings.some((w) => w.includes("Production-Deployment läuft mit APP_ENV=staging")));
+});
+test("ohne gültiges APP_ENV wird aus VERCEL_ENV abgeleitet und der Grund gemeldet", () => {
+  assert.deepEqual(resolveAppEnv(E({ VERCEL_ENV: "preview" })), { env: "staging", source: "VERCEL_ENV" });
+  const bad = validateConfig(prod({ APP_ENV: "stagng", VERCEL_ENV: "production" }));
+  assert.equal(bad.env, "production");
+  assert.equal(bad.envSource, "VERCEL_ENV");
+  assert.ok(bad.appEnvNote.includes("ungültig") && bad.errors.some((e) => e.includes("APP_ENV ist gesetzt, aber ungültig")));
+  assert.ok(validateConfig(prod({ APP_ENV: undefined, VERCEL_ENV: "production" })).appEnvNote.includes("nicht gesetzt"));
+});
+test("Preview-Deployment darf nie als production laufen", () => {
+  assert.ok(validateConfig(prod({ APP_ENV: "production", VERCEL_ENV: "preview" })).errors.some((e) => e.includes("Preview-Deployment")));
+  assert.equal(validateConfig(prod({ APP_ENV: undefined, VERCEL_ENV: "preview", STRIPE_SECRET_KEY: "sk_test_x", NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_x" })).env, "staging");
+});
+test("effectiveAppUrl: Preview leitet die stabile Branch-URL ab; explizite Variable hat Vorrang", () => {
+  assert.equal(effectiveAppUrl(E({ VERCEL_ENV: "preview", VERCEL_BRANCH_URL: "shop-git-staging-team.vercel.app", VERCEL_URL: "shop-abc123.vercel.app" })), "https://shop-git-staging-team.vercel.app");
+  assert.equal(effectiveAppUrl(E({ VERCEL_ENV: "preview", VERCEL_URL: "shop-abc123.vercel.app" })), "https://shop-abc123.vercel.app");
+  assert.equal(effectiveAppUrl(E({ NEXT_PUBLIC_APP_URL: "https://www.example.de/", VERCEL_ENV: "preview", VERCEL_BRANCH_URL: "x.vercel.app" })), "https://www.example.de");
+  assert.equal(effectiveAppUrl(E({})), "http://localhost:3000");
+  // Staging-Preview ohne NEXT_PUBLIC_APP_URL ist gültig
+  const ok = validateConfig(prod({ APP_ENV: undefined, NEXT_PUBLIC_APP_URL: undefined, VERCEL_ENV: "preview", VERCEL_BRANCH_URL: "shop-git-staging-team.vercel.app", STRIPE_SECRET_KEY: "sk_test_x", NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_x" }));
+  assert.deepEqual(ok.errors, []);
 });

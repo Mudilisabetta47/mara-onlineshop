@@ -8,17 +8,48 @@
  */
 export type AppEnv = "local" | "staging" | "production";
 
-export function appEnv(): AppEnv {
-  const e = process.env.APP_ENV;
-  if (e === "local" || e === "staging" || e === "production") return e;
-  if (process.env.VERCEL_ENV === "production") return "production";
-  if (process.env.VERCEL_ENV === "preview") return "staging";
-  return "local";
+/**
+ * Tolerantes Lesen von APP_ENV: Leerzeichen, Groß-/Kleinschreibung und umschließende Anführungszeichen werden ignoriert
+ * (in der Vercel-Oberfläche werden Anführungszeichen wörtlich gespeichert – typischer Kopierfehler aus .env-Dateien).
+ */
+export function parseAppEnv(raw: string | undefined): AppEnv | undefined {
+  const v = (raw ?? "").trim().replace(/^["']+|["']+$/g, "").trim().toLowerCase();
+  return v === "local" || v === "staging" || v === "production" ? v : undefined;
+}
+
+/** Vorrang: gültiges APP_ENV › VERCEL_ENV (production → production, preview → staging) › local. VERCEL_ENV übersteuert NIE ein gültiges APP_ENV. */
+export function resolveAppEnv(e: NodeJS.ProcessEnv = process.env): { env: AppEnv; source: "APP_ENV" | "VERCEL_ENV" | "default" } {
+  const explicit = parseAppEnv(e.APP_ENV);
+  if (explicit) return { env: explicit, source: "APP_ENV" };
+  if (e.VERCEL_ENV === "production") return { env: "production", source: "VERCEL_ENV" };
+  if (e.VERCEL_ENV === "preview") return { env: "staging", source: "VERCEL_ENV" };
+  return { env: "local", source: "default" };
+}
+
+export const appEnv = (): AppEnv => resolveAppEnv().env;
+
+/**
+ * Öffentliche Basis-URL: NEXT_PUBLIC_APP_URL, sonst (Vercel) die stabile Branch-URL bzw. Deployment-URL.
+ * So braucht ein Preview/Staging-Deployment keine feste URL-Variable.
+ */
+export function effectiveAppUrl(e: NodeJS.ProcessEnv = process.env): string {
+  const explicit = (e.NEXT_PUBLIC_APP_URL ?? "").trim().replace(/\/$/, "");
+  if (explicit) return explicit;
+  const host = e.VERCEL_ENV === "preview" ? e.VERCEL_BRANCH_URL || e.VERCEL_URL : e.VERCEL_PROJECT_PRODUCTION_URL || e.VERCEL_URL;
+  return host ? `https://${host}` : "http://localhost:3000";
 }
 export const isLocal = () => appEnv() === "local";
 export const isLive = () => appEnv() === "production";
 
-export type ConfigReport = { env: AppEnv; errors: string[]; warnings: string[] };
+export type ConfigReport = {
+  env: AppEnv;
+  /** Woher die Umgebung stammt – erklärt „warum production?“ ohne Werte zu verraten */
+  envSource: "APP_ENV" | "VERCEL_ENV" | "default";
+  /** Hinweis zu APP_ENV (nur Beschreibung, nie der Wert) */
+  appEnvNote: string;
+  errors: string[];
+  warnings: string[];
+};
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0", "host.docker.internal"]);
 
@@ -54,17 +85,22 @@ function parseDb(url: string | undefined) {
 /** Reine Funktion (testbar): prüft ein Env-Objekt. Gibt niemals Werte aus – nur Variablennamen und Hinweise. */
 export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport {
   const errors: string[] = [], warnings: string[] = [];
-  const explicit = e.APP_ENV;
-  const env: AppEnv = explicit === "local" || explicit === "staging" || explicit === "production" ? explicit
-    : e.VERCEL_ENV === "production" ? "production" : e.VERCEL_ENV === "preview" ? "staging" : "local";
+  const { env, source } = resolveAppEnv(e);
+  const rawSet = (e.APP_ENV ?? "").trim() !== "";
+  const validApp = parseAppEnv(e.APP_ENV);
+  const appEnvNote = validApp ? `APP_ENV gesetzt (${validApp})` : rawSet ? "APP_ENV ist gesetzt, aber ungültig (erlaubt: local, staging, production)" : "APP_ENV ist in dieser Umgebung nicht gesetzt";
 
-  if (e.NODE_ENV === "production" && !explicit && !e.VERCEL_ENV)
+  if (e.NODE_ENV === "production" && !validApp && !e.VERCEL_ENV)
     errors.push("APP_ENV fehlt (local | staging | production). Bei NODE_ENV=production muss die Umgebung explizit benannt werden.");
-  if (explicit && !["local", "staging", "production"].includes(explicit)) errors.push("APP_ENV ungültig (erlaubt: local, staging, production).");
+  if (rawSet && !validApp) errors.push("APP_ENV ist gesetzt, aber ungültig (erlaubt: local, staging, production – ohne Anführungszeichen). Ohne gültigen Wert wird die Umgebung aus VERCEL_ENV abgeleitet.");
+  // Trennung Preview ↔ Production: ein Preview-Deployment darf nie als Production laufen (echte Zahlungen/Live-Daten)
+  if (e.VERCEL_ENV === "preview" && env === "production") errors.push("Preview-Deployment mit APP_ENV=production: verboten – Previews sind immer staging (APP_ENV im Scope „Preview“ auf staging setzen oder entfernen).");
+  if (e.VERCEL_ENV === "production" && env === "staging") warnings.push("Das Vercel-Production-Deployment läuft mit APP_ENV=staging (Testbetrieb). Für den Livegang APP_ENV entfernen bzw. auf production setzen.");
 
   const db = parseDb(e.DATABASE_URL || e.POSTGRES_PRISMA_URL || e.POSTGRES_URL);
   if (!db) errors.push("DATABASE_URL fehlt oder ist keine gültige PostgreSQL-URL.");
-  if (env === "local") return { env, errors, warnings };
+  const head = { env, envSource: source, appEnvNote };
+  if (env === "local") return { ...head, errors, warnings };
 
   // ── Datenbank ──
   if (db) {
@@ -77,8 +113,8 @@ export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport
   if (!e.DIRECT_URL) warnings.push("DIRECT_URL fehlt (direkte, nicht gepoolte Verbindung) – wird für `prisma migrate deploy` benötigt.");
 
   // ── URL / Cookies ──
-  const appUrl = e.NEXT_PUBLIC_APP_URL ?? "";
-  if (!/^https:\/\//.test(appUrl) || /localhost|127\.0\.0\.1/.test(appUrl)) errors.push("NEXT_PUBLIC_APP_URL muss die öffentliche https-URL sein (kein localhost).");
+  const appUrl = effectiveAppUrl(e);
+  if (!/^https:\/\//.test(appUrl) || /localhost|127\.0\.0\.1/.test(appUrl)) errors.push("NEXT_PUBLIC_APP_URL muss die öffentliche https-URL sein (kein localhost). Auf Vercel-Previews wird sie automatisch aus VERCEL_BRANCH_URL abgeleitet.");
   if (env === "production" && /\.vercel\.app/.test(appUrl)) warnings.push("NEXT_PUBLIC_APP_URL zeigt auf *.vercel.app – für den Livegang eine eigene Domain verwenden.");
 
   // ── Secrets ──
@@ -117,7 +153,7 @@ export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport
   if (!e.UPSTASH_REDIS_REST_URL || !e.UPSTASH_REDIS_REST_TOKEN) warnings.push("UPSTASH_REDIS_REST_URL/TOKEN fehlen – Rate-Limiting wirkt nur pro Serverinstanz (Serverless: praktisch kaum).");
   if (e.E2E_ALLOW_REMOTE) warnings.push("E2E_ALLOW_REMOTE ist gesetzt – nur für Staging gedacht.");
   if (e.ADMIN_PASSWORD) warnings.push("ADMIN_PASSWORD ist in der Laufzeit-Umgebung gesetzt – nach dem ersten Admin-Setup entfernen.");
-  return { env, errors, warnings };
+  return { ...head, errors, warnings };
 }
 
 let logged = false;

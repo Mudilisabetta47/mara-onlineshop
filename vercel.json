@@ -3,8 +3,14 @@
   "framework": "nextjs",
   "installCommand": "npm ci",
   "buildCommand": "node scripts/vercel-build.mjs",
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "crons": [
-    { "path": "/api/cron/expire-orders", "schedule": "0 3 * * *" }
-  ]
+    {
+      "path": "/api/cron/expire-orders",
+      "schedule": "0 3 * * *"
+    }
+  ],
+  "ignoreCommand": "bash scripts/vercel-ignore.sh"
 }

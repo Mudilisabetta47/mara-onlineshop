@@ -1,7 +1,7 @@
 # Umgebungsvariablen
 
 Drei strikt getrennte Umgebungen – gesteuert über **`APP_ENV`** (`local` | `staging` | `production`).
-Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`, *Preview* → `staging`), kann aber explizit gesetzt werden (empfohlen).
+Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`, *Preview* → `staging`). Ein gültiges `APP_ENV` (ohne Anführungszeichen) hat Vorrang vor `VERCEL_ENV`; ein Preview-Deployment mit `APP_ENV=production` wird blockiert, ein Production-Deployment mit `APP_ENV=staging` warnt.
 
 **Regeln**
 - Secrets stehen **ausschließlich** in den Environment Variables der Hosting-Plattform (bzw. lokal in `.env`). Nie im Repository. `npm run check:secrets` prüft das (läuft auch in der CI).
@@ -13,7 +13,7 @@ Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`,
 | `APP_ENV` | `local` | `staging` | `production` | Umgebung (steuert Schutzschalter, Robots, Testzahlung, Seeds) |
 | `DATABASE_URL` | lokale DB | Staging-DB, **gepoolt**, `sslmode=require` | Production-DB, **gepoolt**, `sslmode=require` | Laufzeit-Verbindung. Lokale Hosts und der Name `lumi_shop` sind in staging/production verboten |
 | `DIRECT_URL` | = `DATABASE_URL` | Staging-DB **direkt** | Production-DB **direkt** | Nur für `prisma migrate deploy` (nicht gepoolt) |
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://staging.…` | `https://www.…` | Öffentliche Basis-URL (E-Mail-Links, PayPal-Rückkehr, Canonical). Pflicht: https |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | optional – auf Vercel-Previews automatisch aus `VERCEL_BRANCH_URL` | `https://www.…` | Öffentliche Basis-URL (E-Mail-Links, PayPal-Rückkehr, Canonical). Pflicht: https |
 | `NEXT_PUBLIC_SHOP_NAME` | Lilli und Lou | Lilli und Lou | Lilli und Lou | Anzeigename |
 | `CRON_SECRET` | beliebig | ≥ 24 Zeichen | ≥ 24 Zeichen | Schützt `/api/cron/*` und `/api/health?detail=1`. Vercel sendet ihn Crons automatisch als `Authorization: Bearer …` |
 | `STORAGE_DRIVER` | `local` | `s3` | **`s3` (Pflicht)** | Vercel-Dateisystem ist flüchtig → Rechnungen/Uploads gingen verloren |
@@ -32,6 +32,7 @@ Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`,
 | `CONFIRM_PRODUCTION_SEED` | – | – | `yes` (nur beim Seed) | Bewusste Bestätigung für Seeds gegen Production |
 | `ALLOW_DEMO_SEED` | – | `1` (nur beim Seed) | **verboten** | Demo-Daten nur in staging bewusst erlauben |
 | `E2E_ALLOW_REMOTE` | – | `1` (nur beim E2E) | **verboten** | E2E gegen Remote-Staging-DB |
+| `ALLOW_PRODUCTION_DEPLOY` | – | – | `1` erst zum Livegang | Solange nicht `1`, wird das Vercel-Production-Deployment (Branch main) übersprungen (`scripts/vercel-ignore.sh`) |
 | `SKIP_MIGRATIONS` | – | optional | optional | `1` = Build führt keine Migration aus (falls die CI migriert) |
 
 ## Was pro Umgebung passiert

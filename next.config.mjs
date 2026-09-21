@@ -1,8 +1,10 @@
 import path from "node:path";
 const isDev = process.env.NODE_ENV !== "production";
 // Umgebung wie in src/lib/config.ts (APP_ENV, sonst aus VERCEL_ENV abgeleitet)
-const appEnv = process.env.APP_ENV
-  ?? (process.env.VERCEL_ENV === "production" ? "production" : process.env.VERCEL_ENV === "preview" ? "staging" : "local");
+const rawAppEnv = (process.env.APP_ENV ?? "").trim().replace(/^["']+|["']+$/g, "").trim().toLowerCase();
+const appEnv = ["local", "staging", "production"].includes(rawAppEnv)
+  ? rawAppEnv
+  : process.env.VERCEL_ENV === "production" ? "production" : process.env.VERCEL_ENV === "preview" ? "staging" : "local";
 
 const csp = [
   "default-src 'self'",
