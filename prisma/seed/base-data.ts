@@ -3,7 +3,7 @@
  * Kategorien sind produktionssicher; die Marken sind FIKTIVE Demo-Marken und werden nur vom Demo-Seed angelegt.
  */
 export const demoBrands = [
-  { slug: "lumi", name: "LUMI", description: "Unsere Hausmarke: zeitlose Basics aus weichen, langlebigen Materialien." },
+  { slug: "lilli-und-lou", name: "Lilli und Lou", description: "Unsere Hausmarke: zeitlose Basics aus weichen, langlebigen Materialien." },
   { slug: "nordkind", name: "Nordkind", description: "Skandinavisch inspirierte Outdoor- und Alltagsmode für kleine Entdecker." },
   { slug: "atelier-petit", name: "Atelier Petit", description: "Feine Schnitte und verspielte Details – kleine Kollektionen mit Charakter." },
   { slug: "sole-co", name: "Sole & Co.", description: "Bequeme Schuhe mit Passform-Anspruch, gemacht für tägliches Rennen." },

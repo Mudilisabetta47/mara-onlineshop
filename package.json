@@ -1,8 +1,8 @@
 {
-  "name": "lumi-shop",
+  "name": "lilli-und-lou-shop",
   "version": "1.0.0",
   "private": true,
-  "description": "LUMI – Premium Online-Shop (Next.js, Prisma, PostgreSQL, Stripe, PayPal)",
+  "description": "Lilli und Lou – Premium Online-Shop (Next.js, Prisma, PostgreSQL, Stripe, PayPal)",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -23,7 +23,8 @@
     "db:purge-demo": "tsx scripts/purge-demo.ts",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:config": "tsx scripts/check-config.ts",
-    "check:stripe": "tsx scripts/check-stripe.ts"
+    "check:stripe": "tsx scripts/check-stripe.ts",
+    "logo": "node scripts/generate-logo.mjs"
   },
   "prisma": {
     "seed": "tsx --env-file=.env prisma/seed/index.ts local"
@@ -45,10 +46,12 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@fontsource/fraunces": "^5.3.0",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
+    "opentype.js": "^2.0.0",
     "postcss": "^8.5.1",
     "prisma": "^6.19.0",
     "sharp": "^0.35.4",

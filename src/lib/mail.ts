@@ -32,7 +32,7 @@ function layout(title: string, text: string) {
   const body = esc(text).replace(/\n/g, "<br>").replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#DCAFC0">$1</a>');
   return `<!doctype html><html><body style="margin:0;background:#0B090B;font-family:-apple-system,Segoe UI,Inter,sans-serif;color:#F6EEF2">
 <div style="max-width:560px;margin:0 auto;padding:40px 28px">
-<div style="letter-spacing:.3em;font-weight:600;font-size:14px;color:#DCAFC0">${esc(shopName())}</div>
+<div style="font-family:Georgia,'Times New Roman',serif;letter-spacing:-.01em;font-weight:700;font-size:24px;color:#DCAFC0">${esc(shopName())}</div>
 <h1 style="font-size:26px;letter-spacing:-.03em;margin:28px 0 16px">${esc(title)}</h1>
 <div style="font-size:15px;line-height:1.65;color:#F6EEF2cc">${body}</div>
 <div style="margin-top:36px;padding-top:20px;border-top:1px solid #4B2237;font-size:12px;color:#F6EEF299">${esc(shopName())} · ${appUrl()}</div>

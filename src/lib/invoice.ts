@@ -4,6 +4,7 @@ import { formatEUR } from "./money";
 import { getSettings } from "./settings";
 import { saveFile, DOC_MIMES } from "./storage";
 import { methodLabel } from "./shipping";
+import { LOGO } from "../components/brand/logo-data";
 
 const nextNumber = async (name: string) => {
   const row = await db.sequence.upsert({
@@ -45,7 +46,13 @@ export async function ensureInvoice(orderId: string) {
     return out === safe(t) ? out : out.trimEnd() + "…";
   };
 
-  text(s.shopName.toUpperCase(), M, 790, 16, bold, accent);
+  if (s.shopName === "Lilli und Lou") {
+    // Vektor-Wortmarke (Baseline bei y=0 im Pfad, y-Achse nach unten)
+    const k = 0.21;
+    page.drawSvgPath(LOGO.wordmark.lilli, { x: M, y: 789, scale: k, color: ink });
+    page.drawSvgPath(LOGO.wordmark.und, { x: M, y: 789, scale: k, color: accent });
+    page.drawSvgPath(LOGO.wordmark.lou, { x: M, y: 789, scale: k, color: ink });
+  } else text(s.shopName, M, 790, 17, bold, accent);
   text("RECHNUNG", 595.28 - M - bold.widthOfTextAtSize("RECHNUNG", 20), 788, 20, bold);
   page.drawLine({ start: { x: M, y: 772 }, end: { x: M + W, y: 772 }, thickness: 0.6, color: rgb(0.85, 0.8, 0.83) });
 

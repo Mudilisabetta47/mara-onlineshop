@@ -35,7 +35,7 @@ export function CampaignBand() {
 /** Split-Layout: Bild links (Mask-Reveal, Parallax 0.85×), Text rechts (1×), Deko (1.15×). */
 export function SplitFeature() {
   return (
-    <section className="container-x py-24 md:py-36" aria-label="Über LUMI">
+    <section className="container-x py-24 md:py-36" aria-label="Über Lilli und Lou">
       <div className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
         <div className="relative">
           <Parallax speed={0.85} range={260}>

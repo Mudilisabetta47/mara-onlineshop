@@ -14,7 +14,7 @@ export type CatalogProduct = {
   description: string;
   material: string;
   category: "junge" | "maedchen" | "schuhe" | "dies-und-das";
-  brand: "lumi" | "nordkind" | "atelier-petit" | "sole-co";
+  brand: "lilli-und-lou" | "nordkind" | "atelier-petit" | "sole-co";
   shape: ShapeName;
   price: number;
   sale?: number;
@@ -57,14 +57,14 @@ export { brands, categories } from "./seed/base-data";
 export const products: CatalogProduct[] = [
   // ───────── Junge ─────────
   {
-    slug: "hoodie-nordlicht", name: "Oversize Hoodie „Nordlicht“", category: "junge", brand: "lumi", shape: "hoodie",
+    slug: "hoodie-nordlicht", name: "Oversize Hoodie „Nordlicht“", category: "junge", brand: "lilli-und-lou", shape: "hoodie",
     short: "Weicher Sweat-Hoodie mit lockerer Passform und Kängurutasche.",
     description: "Der Hoodie, den man nicht mehr ausziehen will: innen aufgeraut und kuschelig, außen glatt und formstabil. Die lockere Oversize-Passform lässt Platz zum Wachsen, die Kordel im Kapuzensaum ist flach vernäht und damit spieltauglich.",
     material: "80 % Bio-Baumwolle, 20 % recyceltes Polyester · 320 g/m²", price: 4990, sku: "LU-HOOD-001", weight: 480,
     featured: true, ageDays: 12, sold: 84, colors: [C.anthrazit, C.sand, C.bordeaux], sizes: KIDS,
   },
   {
-    slug: "basic-tee-everyday", name: "Basic Tee „Everyday“", category: "junge", brand: "lumi", shape: "tee",
+    slug: "basic-tee-everyday", name: "Basic Tee „Everyday“", category: "junge", brand: "lilli-und-lou", shape: "tee",
     short: "Das perfekte T-Shirt in gedeckten Farben – aus Bio-Baumwolle.",
     description: "Ein ehrliches Basic: dichter Single Jersey, sauber verarbeiteter Rundhals und ein Schnitt, der auch nach vielen Wäschen sitzt. Lässt sich mit allem kombinieren.",
     material: "100 % Bio-Baumwolle", price: 1990, sku: "LU-TEE-001", weight: 140,
@@ -116,7 +116,7 @@ export const products: CatalogProduct[] = [
     ageDays: 40, sold: 58, colors: [C.rose, C.schwarz], sizes: KIDS,
   },
   {
-    slug: "cropped-hoodie-luna", name: "Cropped Hoodie „Luna“", category: "maedchen", brand: "lumi", shape: "hoodie",
+    slug: "cropped-hoodie-luna", name: "Cropped Hoodie „Luna“", category: "maedchen", brand: "lilli-und-lou", shape: "hoodie",
     short: "Kurzer Hoodie mit weichem Innenfleece.",
     description: "Kastiger Schnitt, kurze Länge und ein besonders weicher Innenfleece – der Hoodie für Mädchen, die es lässig mögen. Mit verdeckter Tasche.",
     material: "80 % Bio-Baumwolle, 20 % recyceltes Polyester", price: 4690, sku: "LU-HOOD-002", weight: 400,
@@ -130,7 +130,7 @@ export const products: CatalogProduct[] = [
     ageDays: 120, sold: 39, colors: [C.creme, C.flieder], sizes: KIDS,
   },
   {
-    slug: "leggings-soft-touch", name: "Leggings „Soft Touch“", category: "maedchen", brand: "lumi", shape: "trousers",
+    slug: "leggings-soft-touch", name: "Leggings „Soft Touch“", category: "maedchen", brand: "lilli-und-lou", shape: "trousers",
     short: "Elastische Leggings mit hohem Bund – Doppelpack-Qualität.",
     description: "Dehnbar, formstabil und blickdicht. Der hohe, flache Bund rutscht nicht und drückt nicht. Flache Nähte vermeiden Scheuerstellen.",
     material: "95 % Bio-Baumwolle, 5 % Elasthan", price: 2490, sku: "LU-LEG-003", weight: 150,
@@ -190,7 +190,7 @@ export const products: CatalogProduct[] = [
     oneSize: true, featured: true, ageDays: 18, sold: 92, colors: [C.nacht, C.terra, C.salbei], sizes: [],
   },
   {
-    slug: "trinkflasche-edelstahl", name: "Trinkflasche „Aqua“ 400 ml", category: "dies-und-das", brand: "lumi", shape: "bottle",
+    slug: "trinkflasche-edelstahl", name: "Trinkflasche „Aqua“ 400 ml", category: "dies-und-das", brand: "lilli-und-lou", shape: "bottle",
     short: "Doppelwandige Edelstahl-Flasche – hält Getränke lange kühl.",
     description: "Auslaufsicherer Deckel, spülmaschinenfest. Die Flasche passt in die meisten Rucksack-Seitenfächer.",
     material: "Edelstahl 18/8, BPA-frei", price: 2290, sku: "LU-BOT-002", weight: 260,
@@ -218,7 +218,7 @@ export const products: CatalogProduct[] = [
     oneSize: true, ageDays: 55, sold: 28, colors: [C.rose, C.rauch], sizes: [],
   },
   {
-    slug: "cap-canvas-sun", name: "Canvas Cap „Sun“", category: "dies-und-das", brand: "lumi", shape: "cap",
+    slug: "cap-canvas-sun", name: "Canvas Cap „Sun“", category: "dies-und-das", brand: "lilli-und-lou", shape: "cap",
     short: "Verstellbare Cap aus leichtem Canvas.",
     description: "Leichter Canvas, weiches Schweißband und verstellbarer Klettverschluss – wächst ein paar Größen mit.",
     material: "100 % Bio-Baumwolle", price: 1890, sku: "LU-CAP-006", weight: 70,
@@ -226,7 +226,7 @@ export const products: CatalogProduct[] = [
     stock: { "": 0 },
   },
   {
-    slug: "brotdose-bento", name: "Brotdose „Bento“", category: "dies-und-das", brand: "lumi", shape: "lunchbox",
+    slug: "brotdose-bento", name: "Brotdose „Bento“", category: "dies-und-das", brand: "lilli-und-lou", shape: "lunchbox",
     short: "Auslaufsichere Brotdose mit Trennfächern.",
     description: "Drei Fächer, spülmaschinenfest, BPA-frei. Der Klickverschluss lässt sich von kleinen Händen öffnen – und bleibt trotzdem dicht.",
     material: "Polypropylen, BPA-frei", price: 1790, sku: "LU-LUN-007", weight: 210,

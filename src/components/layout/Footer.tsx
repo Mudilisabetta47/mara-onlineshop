@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { LogoWordmark } from "@/components/brand/Logo";
 import { NewsletterForm } from "./Newsletter";
 import { MAIN_NAV } from "./nav-links";
 
@@ -27,10 +28,10 @@ export function Footer() {
           <ul className="flex flex-wrap gap-2" aria-label="Zahlungsarten">
             {PAYMENTS.map((p) => <li key={p} className="rounded-full border border-white/10 px-3.5 py-1.5 text-[12px] text-cream/60">{p}</li>)}
           </ul>
-          <p className="text-[12.5px] text-cream/40">Alle Preise inkl. gesetzlicher MwSt., zzgl. ggf. Versandkosten. © {new Date().getFullYear()} LUMI</p>
+          <p className="text-[12.5px] text-cream/40">Alle Preise inkl. gesetzlicher MwSt., zzgl. ggf. Versandkosten. © {new Date().getFullYear()} Lilli und Lou</p>
         </div>
       </div>
-      <div aria-hidden className="pointer-events-none select-none overflow-hidden whitespace-nowrap text-center text-[22vw] font-semibold leading-[0.78] tracking-[-0.06em] text-white/[0.035]">LUMI</div>
+      <div aria-hidden className="pointer-events-none select-none px-[4vw] pb-[2vw] pt-[2vw]"><LogoWordmark className="mx-auto w-full text-white/[0.04]" /></div>
     </footer>
   );
 }

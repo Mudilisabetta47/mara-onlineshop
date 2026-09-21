@@ -1,4 +1,4 @@
-# LUMI – Premium Online-Shop
+# Lilli und Lou – Premium Online-Shop
 
 Echter E-Commerce-Shop (kein Mockup): Next.js 15 · React 19 · TypeScript · Tailwind · Framer Motion · PostgreSQL · Prisma · Stripe · PayPal.
 Kategorien: **Junge · Mädchen · Schuhe · Dies & Das**. Der gesamte Kaufprozess läuft gegen die Datenbank:
@@ -28,6 +28,7 @@ Lokaler Admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` aus `.env`. Demo-Gutscheine: `WE
 | `npm run db:reset:local` · `db:purge-demo` | lokal zurücksetzen / Demo-Daten entfernen (mit Schutzschaltern) |
 | `npm run check:secrets` · `check:config` · `check:stripe` | Secret-Scan · Umgebungsprüfung · Stripe-Prüfung |
 | `npm run images` | Seed-Bilder neu erzeugen (Platzhalter) |
+| `npm run logo` | Logo neu erzeugen (Vektor: `public/brand/*.svg`, Favicon, `src/components/brand/logo-data.ts`) |
 
 ## Produktion
 

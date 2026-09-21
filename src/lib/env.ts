@@ -3,7 +3,7 @@ import { appEnv } from "./config";
 /** Serverseitige Konfiguration. Secrets verlassen niemals den Server. */
 
 export const appUrl = () => (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
-export const shopName = () => process.env.NEXT_PUBLIC_SHOP_NAME || "LUMI";
+export const shopName = () => process.env.NEXT_PUBLIC_SHOP_NAME || "Lilli und Lou";
 export const isProd = () => process.env.NODE_ENV === "production";
 
 export const stripeEnabled = () =>

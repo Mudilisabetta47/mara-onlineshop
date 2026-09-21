@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth/guards";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/(auth)/actions";
 
-export const metadata: Metadata = { title: { default: "Admin", template: "%s | LUMI Admin" }, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { default: "Admin", template: "%s | Lilli und Lou Admin" }, robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

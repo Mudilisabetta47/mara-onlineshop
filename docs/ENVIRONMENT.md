@@ -14,7 +14,7 @@ Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`,
 | `DATABASE_URL` | lokale DB | Staging-DB, **gepoolt**, `sslmode=require` | Production-DB, **gepoolt**, `sslmode=require` | Laufzeit-Verbindung. Lokale Hosts und der Name `lumi_shop` sind in staging/production verboten |
 | `DIRECT_URL` | = `DATABASE_URL` | Staging-DB **direkt** | Production-DB **direkt** | Nur für `prisma migrate deploy` (nicht gepoolt) |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://staging.…` | `https://www.…` | Öffentliche Basis-URL (E-Mail-Links, PayPal-Rückkehr, Canonical). Pflicht: https |
-| `NEXT_PUBLIC_SHOP_NAME` | LUMI | LUMI | LUMI | Anzeigename |
+| `NEXT_PUBLIC_SHOP_NAME` | Lilli und Lou | Lilli und Lou | Lilli und Lou | Anzeigename |
 | `CRON_SECRET` | beliebig | ≥ 24 Zeichen | ≥ 24 Zeichen | Schützt `/api/cron/*` und `/api/health?detail=1`. Vercel sendet ihn Crons automatisch als `Authorization: Bearer …` |
 | `STORAGE_DRIVER` | `local` | `s3` | **`s3` (Pflicht)** | Vercel-Dateisystem ist flüchtig → Rechnungen/Uploads gingen verloren |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | – | Staging-Bucket | Production-Bucket | S3-kompatibel (R2, S3, Hetzner …). Bucket **privat** |

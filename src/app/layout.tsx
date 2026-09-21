@@ -8,9 +8,9 @@ import { appUrl } from "@/lib/env";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl()),
-  title: { default: "LUMI – Mode, Schuhe & Lieblingsstücke für Kinder", template: "%s | LUMI" },
+  title: { default: "Lilli und Lou – Mode, Schuhe & Lieblingsstücke für Kinder", template: "%s | Lilli und Lou" },
   description: "Ausgewählte Kindermode, Schuhe und Lieblingsstücke. Schneller Versand, 30 Tage Rückgabe, sichere Zahlung.",
-  openGraph: { type: "website", siteName: "LUMI", locale: "de_DE", images: [{ url: "/seed/og.jpg", width: 1200, height: 630 }] },
+  openGraph: { type: "website", siteName: "Lilli und Lou", locale: "de_DE", images: [{ url: "/seed/og.jpg", width: 1200, height: 630 }] },
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
 };

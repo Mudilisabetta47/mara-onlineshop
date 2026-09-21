@@ -102,7 +102,7 @@ export function CatalogView({ filters, data, categories, category, crumbs, baseP
 
       {intro && (
         <section className="mt-24 grid gap-6 border-t border-white/10 pt-12 md:grid-cols-[1fr_2fr]">
-          <h2 className="h-md">{title} bei LUMI</h2>
+          <h2 className="h-md">{title} bei Lilli und Lou</h2>
           <p className="max-w-[720px] text-[16px] leading-[1.75] text-cream/65">{intro}</p>
         </section>
       )}

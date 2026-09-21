@@ -3,7 +3,7 @@ import { db } from "./db";
 import { shopName } from "./env";
 
 export const SETTINGS_DEFAULTS = {
-  shopName: "LUMI",
+  shopName: "Lilli und Lou",
   tagline: "Ausgewählte Mode, Schuhe und Lieblingsstücke für Kinder.",
   // Anbieterkennzeichnung – MUSS vor dem Livegang im Admin gepflegt werden
   legalName: "[Firmenname – bitte im Admin pflegen]",

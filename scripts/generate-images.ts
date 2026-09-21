@@ -4,6 +4,7 @@
  * Hinweis: Das sind stilisierte Platzhalter – echte Fotos lädt man im Admin (/admin/products) hoch.
  */
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { products, type ShapeName } from "../prisma/catalog";
@@ -199,9 +200,18 @@ async function editorial() {
     await write("e/split.webp", m, { w: W, h: H, q: 80 });
     console.log("✓ split");
   }
+}
 
-  // Open-Graph (ohne Text, damit keine Systemschrift nötig ist)
-  {
+/** Logo aus public/brand/logo.svg als verschachteltes SVG einbetten (Vektorpfade, keine Schrift nötig). */
+function logoLockup(x: number, y: number, width: number) {
+  const svgText = readFileSync("public/brand/logo.svg", "utf8");
+  const vb = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/)!;
+  const inner = svgText.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+  return `<svg x="${x}" y="${y}" width="${width}" height="${(width * +vb[2]) / +vb[1]}" viewBox="0 0 ${vb[1]} ${vb[2]}">${inner}</svg>`;
+}
+
+/** Open-Graph-Bild (Logo als Vektor, Claim in Systemschrift Helvetica/Arial) */
+async function og() {
     const W = 1200, H = 630;
     const m = svg(W, H, `${defs}
       <rect width="${W}" height="${H}" fill="#0B090B"/>
@@ -209,16 +219,18 @@ async function editorial() {
       <path d="${arch(640, 60, 420, 700)}" fill="#4B2237"/>
       ${place("hoodie", "#cdbca8", 760, 340, 460, 5, "#A95D7C")}
       ${place("sneaker", "#f2edeb", 990, 470, 300, -8, "#A95D7C")}
-      <text x="80" y="330" font-family="Helvetica, Arial, sans-serif" font-size="120" font-weight="700" letter-spacing="14" fill="#F6EEF2">LUMI</text>
+      ${logoLockup(70, 240, 470)}
+      <text x="72" y="352" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#DCAFC0">Mode, Schuhe &amp; Lieblingsstücke</text>
+      <text x="72" y="392" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#DCAFC0">für Kinder</text>
       ${grain(W, H)}`);
     await sharp(Buffer.from(m), { density: 96 }).resize(W, H).jpeg({ quality: 84 }).toFile(path.join(OUT, "og.jpg"));
-  }
 }
 
 async function main() {
   const only = process.argv[2];
   await fs.mkdir(OUT, { recursive: true });
-  if (only !== "products") await editorial();
+  if (only === "og") { await og(); console.log("✓ og"); return; }
+  if (only !== "products") { await editorial(); await og(); }
   if (only !== "editorial") await productImages();
   console.log("Fertig →", OUT);
 }
