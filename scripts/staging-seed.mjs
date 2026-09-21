@@ -41,14 +41,20 @@ export function parseTarget(raw, { allowLocal = false, allowNonNeon = false } = 
 /** Entfernt alles, was wie eine Verbindungs-URL aussieht, aus Fehlertexten. */
 export const scrub = (s) => String(s).replace(/postgres(?:ql)?:\/\/\S+/gi, "postgresql://***");
 
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+
 function ask(question, { hidden = false } = {}) {
   return new Promise((resolve) => {
-    let muted = false;
-    const out = new Writable({ write(chunk, enc, cb) { if (!muted) process.stdout.write(chunk, enc); cb(); } });
-    const rl = readline.createInterface({ input: process.stdin, output: out, terminal: true });
-    process.stdout.write(question);
-    muted = hidden;
-    rl.question("", (a) => { muted = false; if (hidden) process.stdout.write("\n"); rl.close(); resolve(a.trim()); });
+    const originalWrite = rl._writeToOutput.bind(rl);
+    if (hidden) {
+      rl._writeToOutput = () => {};
+      process.stdout.write(question);
+    }
+    rl.question(hidden ? "" : question, (a) => {
+      rl._writeToOutput = originalWrite;
+      if (hidden) process.stdout.write("\n");
+      resolve(a.trim());
+    });
   });
 }
 
@@ -139,4 +145,4 @@ async function main() {
   process.exit(await runFlow({ direct: t.direct, appEnv: "staging", adminEmail, adminPassword, stagingUrl }));
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main().catch((e) => { console.error("✖", scrub(e.message)); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main().catch((e) => { console.error("✖", scrub(e.message)); process.exit(1); }).finally(() => rl.close());
