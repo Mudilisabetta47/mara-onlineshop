@@ -45,7 +45,8 @@ unset DATABASE_URL DIRECT_URL ADMIN_PASSWORD
 ## Fehlerbilder
 | Meldung / Symptom | Ursache | Lösung |
 |---|---|---|
-| Build: „DATABASE_URL und DIRECT_URL müssen … gesetzt sein“ | Variablen fehlen oder falscher Scope | Beide im Scope **Production** (bzw. Preview) setzen |
+| Build: „Fehlt in der Vercel-Umgebung: DATABASE_URL / DIRECT_URL“ | Variablen fehlen oder falscher Scope (Änderungen wirken erst nach **Redeploy**) | Beide im Scope **Production** (bzw. Preview) setzen. Bei der Vercel-Neon-Integration reicht `DATABASE_URL`; `DATABASE_URL_UNPOOLED` wird automatisch als `DIRECT_URL` verwendet |
+| Build: `P1001` / `P1000` mit Neon | `&channel_binding=require` in der URL | diesen Teil aus beiden URLs löschen, `sslmode=require` behalten |
 | Build: „DIRECT_URL zeigt auf eine lokale Datenbank“ | `localhost`-URL eingetragen | Neon-URL verwenden |
 | Build: `P1001 Can't reach database` | Direct-URL falsch / Neon-Projekt pausiert | URL prüfen, Neon-Dashboard öffnen (weckt die DB) |
 | Seite lädt, aber **HTTP 500** überall | Konfigurations-Wächter: Log in Vercel → *Logs* zeigt `[config:…] FEHLER …` | Genannte Variable korrigieren, neu deployen |
