@@ -82,6 +82,8 @@ Sicherheitsdesign: Kartendaten gelangen nie auf unseren Server; Beträge/Preise 
 - Noch nicht umgesetzt: **Zwei-Faktor-Authentifizierung** für Admins (dringend empfohlen, siehe Checkliste).
 
 ## 7 · Health Check & Monitoring
+- **Konfigurations-Wächter:** `src/middleware.ts` prüft in staging/production die Umgebung bei jeder Anfrage (Ergebnis pro Instanz gecacht). Fehlerhaft → 503 statt Absturz; Details im Server-Log (`[config:…] FEHLER`), in staging zusätzlich auf der Seite.
+- **Neon/Pooler:** `DATABASE_URL` (auch `POSTGRES_PRISMA_URL`/`POSTGRES_URL` als Fallback) wird für Prisma aufbereitet: bei Pooler-Host wird `pgbouncer=true` und `connect_timeout=15` ergänzt (`resolveDatabaseUrl` in `src/lib/config.ts`). Migrationen nutzen `DIRECT_URL` bzw. `DATABASE_URL_UNPOOLED`.
 - `GET /api/health` (öffentlich, minimal): `status` `ok|degraded|down`, Checks `database`, `schema`, `migrations`, `storage` (nur true/false). HTTP **503** bei Datenbank-/Schema-/Migrationsproblem, 200 + `degraded` bei Storage-Problem. Rate-limitiert, `no-store`.
 - `GET /api/health?detail=1` mit Bearer-`CRON_SECRET`: Latenzen, Version (Commit), Region, Betriebsbereitschaft (fehlende Anbieterdaten, Demo-Daten, Admin-Status, Zahlarten). Enthält nie Secrets.
 - Uptime-Monitor (UptimeRobot/Better Stack/Checkly) auf `https://www.deine-domain.de/api/health`, Alarm bei ≠ 200, Intervall 1 Min; zusätzlich Vercel-Alerts und Stripe-Webhook-Fehler-E-Mails aktivieren.

@@ -6,7 +6,7 @@ Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`,
 **Regeln**
 - Secrets stehen **ausschließlich** in den Environment Variables der Hosting-Plattform (bzw. lokal in `.env`). Nie im Repository. `npm run check:secrets` prüft das (läuft auch in der CI).
 - `.env`, `.env.*` sind per `.gitignore` ausgeschlossen; eingecheckt sind nur `.env.example`, `.env.staging.example`, `.env.production.example` (Platzhalter).
-- Jede Umgebung hat **eigene** Datenbank, eigenen Storage-Bucket, eigene Stripe-/PayPal-Schlüssel. Beim Serverstart wird die Konfiguration geprüft (`src/lib/config.ts`); in staging/production **startet der Server nicht**, wenn z. B. die Datenbank lokal ist, Stripe-Testschlüssel in Production stehen oder der Storage nicht `s3` ist. Manuell prüfen: `npm run check:config`.
+- Jede Umgebung hat **eigene** Datenbank, eigenen Storage-Bucket, eigene Stripe-/PayPal-Schlüssel. Beim Serverstart wird die Konfiguration geprüft (`src/lib/config.ts`); in staging/production antwortet der Shop mit **503 „Konfigurationsfehler“** (Middleware `src/middleware.ts`; in staging mit Liste der Variablen-Namen, in production nur mit Hinweis auf das Server-Log), wenn z. B. die Datenbank lokal ist, Stripe-Testschlüssel in Production stehen oder der Storage nicht `s3` ist. Manuell prüfen: `npm run check:config`.
 
 | Variable | local | staging | production | Beschreibung |
 |---|---|---|---|---|
@@ -20,7 +20,7 @@ Auf Vercel wird sie automatisch abgeleitet (Scope *Production* → `production`,
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | – | Staging-Bucket | Production-Bucket | S3-kompatibel (R2, S3, Hetzner …). Bucket **privat** |
 | `S3_ENDPOINT`, `S3_REGION`, `S3_FORCE_PATH_STYLE`, `S3_PREFIX`, `S3_SSE` | – | optional | optional | Endpoint (R2/Hetzner), Region (`auto` bei R2), Path-Style, Key-Präfix, `S3_SSE=1` = AES-256 serverseitig |
 | `STORAGE_DIR` | `./storage` | – | – | Nur `STORAGE_DRIVER=local` |
-| `STRIPE_SECRET_KEY` | optional `sk_test_` | `sk_test_…` | **`sk_live_…`** | Testschlüssel in production bzw. Live-Schlüssel in staging → Startabbruch |
+| `STRIPE_SECRET_KEY` | optional `sk_test_` | `sk_test_…` | **`sk_live_…`** | Testschlüssel in production bzw. Live-Schlüssel in staging → 503 Konfigurationsfehler |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | optional | `pk_test_…` | **`pk_live_…`** | Öffentlicher Schlüssel (darf im Browser stehen) |
 | `STRIPE_WEBHOOK_SECRET` | optional (`stripe listen`) | `whsec_…` (Staging-Endpoint) | `whsec_…` (Live-Endpoint) | Pflicht, sobald Stripe aktiv ist |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | optional | Sandbox | Live | |

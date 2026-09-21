@@ -17,7 +17,7 @@ Stand: 2026-09-21. Ich konnte **kein** Vercel-, Neon-, Stripe-, PayPal-, Resend-
 | L5 | Kompletter Kaufprozess | ✅ | `npm run e2e`: **91/91** (Warenkorb, Gutschein, Checkout, Bezahlt, Bestand, Rechnung, Überverkauf, Ablauf, Konto, Admin, Health) |
 | L6 | Unit-Tests | ✅ | `npm test`: **20/20** (Geld, Gutscheine, Konfigurationsregeln) |
 | L7 | Typecheck + Produktions-Build | ✅ | `tsc` sauber, `next build` erfolgreich |
-| L8 | Konfig-Wächter startet Production nicht bei Fehlkonfiguration | ✅ | Test: `APP_ENV=production` + lokale DB → Serverstart bricht mit 7 Fehlern ab |
+| L8 | Konfig-Wächter blockiert Production bei Fehlkonfiguration (lesbar) | ✅ | Test: `APP_ENV=production` + lokale DB → alle Seiten 503 „Konfigurationsfehler“; staging zeigt zusätzlich die Liste der Variablen-Namen |
 | L9 | Health Check | ✅ | `/api/health` 200 `ok`; Details nur mit Token; Storage-Ausfall → `degraded` getestet |
 | L10 | S3-Storage-Driver | 🟡 | put/get/remove/check gegen S3-Mock ✅; **gegen echten Bucket noch nicht** → STAGING S4 |
 | L11 | Backup + Restore | ✅ | `scripts/backup-db.sh` → Restore in Wegwerf-DB: 24/7/5 Datensätze identisch |
@@ -87,7 +87,7 @@ Werte aus `.env.production.example` in Vercel → Scope **Production**. Nichts a
 | P15 | Apple Pay / Google Pay | ⬜ | Domain-Verifizierung (siehe S10) |
 | P16 | PayPal Live | ⬜ | Live-App, `PAYPAL_ENV=live` |
 | P17 | Vorkasse | ⬜ | IBAN/BIC/Kontoinhaber in *Admin → Einstellungen* (sonst nicht wählbar) |
-| P18 | E-Mail-Absender | ⬜ | Resend + verifizierte Domain (SPF/DKIM/DMARC), `MAIL_FROM` ohne example.com (Pflicht, sonst Startabbruch) |
+| P18 | E-Mail-Absender | ⬜ | Resend + verifizierte Domain (SPF/DKIM/DMARC), `MAIL_FROM` ohne example.com (Pflicht, sonst 503 Konfigurationsfehler) |
 | P19 | **Live-Abnahmekauf** | ⬜ | Kleiner echter Betrag: bezahlt → Rechnung/Mail → Erstattung im Admin bzw. Stripe |
 
 ### C · Inhalte & Recht

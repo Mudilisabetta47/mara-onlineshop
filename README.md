@@ -32,7 +32,7 @@ Lokaler Admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` aus `.env`. Demo-Gutscheine: `WE
 
 ## Produktion
 
-**Die lokale Datenbank wird nie produktiv genutzt.** Production/Staging bekommen eigene Datenbanken, eigenen Storage und eigene Schlüssel; `APP_ENV` trennt die Umgebungen, und ein Konfigurations-Wächter verhindert den Start bei Fehlkonfiguration.
+**Die lokale Datenbank wird nie produktiv genutzt.** Production/Staging bekommen eigene Datenbanken, eigenen Storage und eigene Schlüssel; `APP_ENV` trennt die Umgebungen, und ein Konfigurations-Wächter (`src/middleware.ts`) liefert bei Fehlkonfiguration ein lesbares **503** statt eines Absturzes (Staging: mit Liste der Variablen-Namen, Production: allgemeine Meldung + Server-Log).
 
 | Dokument | Inhalt |
 |---|---|

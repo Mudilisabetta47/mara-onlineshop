@@ -22,6 +22,26 @@ export type ConfigReport = { env: AppEnv; errors: string[]; warnings: string[] }
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0", "host.docker.internal"]);
 
+/**
+ * Liefert die Datenbank-URL für den Prisma-Client. Reihenfolge: DATABASE_URL → POSTGRES_PRISMA_URL → POSTGRES_URL
+ * (Namen der Vercel-Neon-/Supabase-Integration). Bei einem Neon-/PgBouncer-Pooler (Host enthält „-pooler“ bzw. „pooler“)
+ * wird `pgbouncer=true` ergänzt (Prisma nutzt dann keine serverseitigen Prepared Statements, die der Pooler im
+ * Transaction-Mode nicht sicher unterstützt) und für Remote-Hosts `connect_timeout=15`, falls nicht gesetzt.
+ * Reine String-Ergänzung – bestehende Parameter und das Passwort bleiben unverändert.
+ */
+export function resolveDatabaseUrl(e: NodeJS.ProcessEnv = process.env): string | undefined {
+  const raw = e.DATABASE_URL || e.POSTGRES_PRISMA_URL || e.POSTGRES_URL;
+  if (!raw) return undefined;
+  const m = raw.match(/^postgres(?:ql)?:\/\/(?:[^@/]*@)?([^:/?#]+)/i);
+  if (!m) return raw;
+  const host = m[1].toLowerCase();
+  const add: string[] = [];
+  if (/pooler/.test(host) && !/[?&]pgbouncer=/.test(raw)) add.push("pgbouncer=true");
+  if (!LOCAL_HOSTS.has(host) && !/[?&]connect_timeout=/.test(raw)) add.push("connect_timeout=15");
+  if (!add.length) return raw;
+  return raw + (raw.includes("?") ? "&" : "?") + add.join("&");
+}
+
 function parseDb(url: string | undefined) {
   if (!url) return null;
   try {
@@ -42,7 +62,7 @@ export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport
     errors.push("APP_ENV fehlt (local | staging | production). Bei NODE_ENV=production muss die Umgebung explizit benannt werden.");
   if (explicit && !["local", "staging", "production"].includes(explicit)) errors.push("APP_ENV ungültig (erlaubt: local, staging, production).");
 
-  const db = parseDb(e.DATABASE_URL);
+  const db = parseDb(e.DATABASE_URL || e.POSTGRES_PRISMA_URL || e.POSTGRES_URL);
   if (!db) errors.push("DATABASE_URL fehlt oder ist keine gültige PostgreSQL-URL.");
   if (env === "local") return { env, errors, warnings };
 
@@ -101,16 +121,17 @@ export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport
 }
 
 let logged = false;
-/** Beim Serverstart aufrufen. In staging/production → Fehler beenden den Start. */
-export function assertConfig() {
+/**
+ * Beim Serverstart aufrufen: schreibt Fehler/Warnungen ins Log – wirft aber NICHT.
+ * Durchgesetzt wird die Konfiguration in `src/middleware.ts`: Ist sie in staging/production ungültig, antwortet der Shop
+ * mit einem lesbaren 503 statt mit einem unverständlichen Absturz (500) der ganzen Server-Funktion.
+ */
+export function logConfig() {
   const r = validateConfig();
   if (!logged) {
     logged = true;
     r.warnings.forEach((w) => console.warn(`[config:${r.env}] WARN  ${w}`));
-  }
-  if (r.errors.length && r.env !== "local") {
     r.errors.forEach((x) => console.error(`[config:${r.env}] FEHLER ${x}`));
-    throw new Error(`Ungültige ${r.env}-Konfiguration (${r.errors.length} Fehler). Details siehe oben.`);
   }
   return r;
 }

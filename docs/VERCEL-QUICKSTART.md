@@ -49,7 +49,9 @@ unset DATABASE_URL DIRECT_URL ADMIN_PASSWORD
 | Build: `P1001` / `P1000` mit Neon | `&channel_binding=require` in der URL | diesen Teil aus beiden URLs löschen, `sslmode=require` behalten |
 | Build: „DIRECT_URL zeigt auf eine lokale Datenbank“ | `localhost`-URL eingetragen | Neon-URL verwenden |
 | Build: `P1001 Can't reach database` | Direct-URL falsch / Neon-Projekt pausiert | URL prüfen, Neon-Dashboard öffnen (weckt die DB) |
-| Seite lädt, aber **HTTP 500** überall | Konfigurations-Wächter: Log in Vercel → *Logs* zeigt `[config:…] FEHLER …` | Genannte Variable korrigieren, neu deployen |
+| Seite zeigt **„Der Shop ist nicht korrekt konfiguriert“** bzw. HTTP **503** `Konfigurationsfehler` | Konfigurations-Wächter: In *staging* steht die Liste der betroffenen Variablen direkt auf der Seite (nur Namen, keine Werte); in *production* zeigt Vercel → *Logs* `[config:…] FEHLER …` | Genannte Variable korrigieren, neu deployen |
+| `/api/health` → 503 `"status":"down"` | Datenbank/Schema/Migrationen nicht erreichbar oder nicht angewendet | Ursache im Detail: `curl -H "Authorization: Bearer <CRON_SECRET>" "https://<domain>/api/health?detail=1"` (Fehlertext ohne Passwort) |
+| HTTP **500** ohne Text auf allen dynamischen Seiten | Server-Funktion stürzt beim Start ab (Ursache im Vercel-Log: *Logs → Errors*) | Fehlermeldung aus dem Log an den Support/Entwickler geben |
 | Shop leer (keine Produkte) | Seed nicht ausgeführt | Schritt 2 wiederholen |
 | Checkout: „keine Zahlungsart“ | Weder Stripe noch IBAN konfiguriert | Stripe-Testschlüssel setzen oder IBAN im Admin |
 | Deploy abgelehnt: „Hobby accounts are limited to daily cron jobs“ | Cron zu häufig | `vercel.json` steht auf täglich – aktuellen Stand aus GitHub verwenden |

@@ -13,6 +13,8 @@ const run = (cmd) => {
   if (r.status !== 0) process.exit(r.status ?? 1);
 };
 // Vercel-Neon-Integration / Supabase setzen andere Namen für die direkte (nicht gepoolte) Verbindung – als Fallback akzeptieren.
+process.env.DATABASE_URL ||= process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL || "";
+if (!process.env.DATABASE_URL) delete process.env.DATABASE_URL;
 process.env.DIRECT_URL ||= process.env.DATABASE_URL_UNPOOLED || process.env.POSTGRES_URL_NON_POOLING || "";
 if (!process.env.DIRECT_URL) delete process.env.DIRECT_URL;
 const vercelEnv = process.env.VERCEL_ENV; // production | preview | development | undefined (lokal)

@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig } from "./config";
+import { validateConfig, resolveDatabaseUrl } from "./config";
 
+const E = (o: Record<string, string | undefined>) => o as unknown as NodeJS.ProcessEnv;
 const prod = (o: Record<string, string | undefined> = {}): NodeJS.ProcessEnv => ({
   NODE_ENV: "production", APP_ENV: "production",
   DATABASE_URL: "postgresql://u:p@ep-x.eu-central-1.aws.neon.tech/shop_prod?sslmode=require", DIRECT_URL: "postgresql://u:p@ep-x.eu-central-1.aws.neon.tech/shop_prod?sslmode=require",
@@ -44,4 +45,28 @@ test("NODE_ENV=production ohne APP_ENV ist ein Fehler; local ist locker", () => 
 test("Fehlermeldungen enthalten keine Werte", () => {
   const r = validateConfig(prod({ DATABASE_URL: "postgresql://geheim:passwort123@localhost/lumi_shop", STRIPE_SECRET_KEY: "sk_test_GEHEIM" }));
   assert.ok(![...r.errors, ...r.warnings].join(" ").match(/passwort123|GEHEIM/));
+});
+
+test("resolveDatabaseUrl: Neon-Pooler bekommt pgbouncer=true + connect_timeout, bestehende Parameter/Passwort bleiben", () => {
+  const u = resolveDatabaseUrl(E({ DATABASE_URL: "postgresql://user:p%40ss@ep-cool-123-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require" }))!;
+  assert.ok(u.startsWith("postgresql://user:p%40ss@ep-cool-123-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require&"));
+  assert.ok(u.includes("pgbouncer=true") && u.includes("connect_timeout=15"));
+});
+test("resolveDatabaseUrl: direkte URL bleibt ohne pgbouncer; nichts wird doppelt ergänzt", () => {
+  const direct = "postgresql://u:p@ep-cool-123.eu-central-1.aws.neon.tech/db?sslmode=require";
+  const r = resolveDatabaseUrl(E({ DATABASE_URL: direct }))!;
+  assert.ok(!r.includes("pgbouncer") && r.includes("connect_timeout=15"));
+  const again = resolveDatabaseUrl(E({ DATABASE_URL: r }));
+  assert.equal(again, r);
+  const pooled = "postgresql://u:p@x-pooler.neon.tech/db?sslmode=require&pgbouncer=true&connect_timeout=15";
+  assert.equal(resolveDatabaseUrl(E({ DATABASE_URL: pooled })), pooled);
+});
+test("resolveDatabaseUrl: lokale URL unverändert; Fallback auf POSTGRES_PRISMA_URL/POSTGRES_URL", () => {
+  assert.equal(resolveDatabaseUrl(E({ DATABASE_URL: "postgresql://u@localhost:5432/lumi_shop?schema=public" })), "postgresql://u@localhost:5432/lumi_shop?schema=public");
+  assert.ok(resolveDatabaseUrl(E({ POSTGRES_PRISMA_URL: "postgresql://u:p@ep-x-pooler.neon.tech/db?sslmode=require" }))!.includes("pgbouncer=true"));
+  assert.equal(resolveDatabaseUrl(E({})), undefined);
+});
+test("validateConfig akzeptiert die Vercel-Neon-Variablen (POSTGRES_URL statt DATABASE_URL)", () => {
+  const r = validateConfig(prod({ DATABASE_URL: undefined, POSTGRES_URL: "postgresql://u:p@ep-x-pooler.eu.neon.tech/shop?sslmode=require" }));
+  assert.ok(!r.errors.some((e) => e.includes("DATABASE_URL")));
 });
