@@ -1,0 +1,62 @@
+{
+  "name": "lumi-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LUMI – Premium Online-Shop (Next.js, Prisma, PostgreSQL, Stripe, PayPal)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "images": "tsx scripts/generate-images.ts",
+    "test": "tsx --test src/lib/money.test.ts src/lib/coupons.test.ts src/lib/config.test.ts",
+    "e2e": "tsx --env-file=.env scripts/e2e.ts",
+    "build:vercel": "node scripts/vercel-build.mjs",
+    "db:status": "prisma migrate status",
+    "db:reset:local": "node --env-file=.env scripts/db-reset-local.mjs",
+    "db:seed": "tsx --env-file=.env prisma/seed/index.ts local",
+    "db:seed:base": "tsx prisma/seed/index.ts base",
+    "db:seed:admin": "tsx prisma/seed/index.ts admin",
+    "db:seed:demo": "tsx prisma/seed/index.ts demo",
+    "db:purge-demo": "tsx scripts/purge-demo.ts",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:config": "tsx scripts/check-config.ts",
+    "check:stripe": "tsx scripts/check-stripe.ts"
+  },
+  "prisma": {
+    "seed": "tsx --env-file=.env prisma/seed/index.ts local"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1136.0",
+    "@fontsource-variable/inter": "^5.2.5",
+    "@prisma/client": "^6.19.0",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.2",
+    "lenis": "^1.1.18",
+    "next": "^15.5.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "stripe": "^18.2.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "prisma": "^6.19.0",
+    "sharp": "^0.35.4",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,45 @@
+name: Shop CI
+on:
+  pull_request:
+    paths: ["shop/**", ".github/workflows/shop-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["shop/**"]
+
+defaults:
+  run:
+    working-directory: shop
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: shop/package-lock.json }
+      - run: npm ci
+      - name: Secret-Scan
+        run: npm run check:secrets
+      - name: Typecheck & Unit-Tests
+        run: npm run typecheck && npm test
+      - name: Flüchtige Test-Datenbank starten (Zufallspasswort, nur für diesen Lauf)
+        run: |
+          PW="$(openssl rand -hex 16)"; echo "::add-mask::$PW"
+          docker run -d --name pg -e POSTGRES_PASSWORD="$PW" -e POSTGRES_DB=shop_ci -p 5432:5432 postgres:16
+          for i in $(seq 1 30); do docker exec pg pg_isready -U postgres && break || sleep 1; done
+          echo "DATABASE_URL=postgresql://postgres:$PW@localhost:5432/shop_ci?schema=public" >> "$GITHUB_ENV"
+          echo "DIRECT_URL=postgresql://postgres:$PW@localhost:5432/shop_ci?schema=public" >> "$GITHUB_ENV"
+          echo "ADMIN_PASSWORD=Ci-$(openssl rand -hex 12)-Aa1" >> "$GITHUB_ENV"
+      - name: Migrationen (wie in Production) + Demo-Seed (nur CI/local)
+        env: { APP_ENV: local, ADMIN_EMAIL: ci-admin@lumi.local }
+        run: cp .env.example .env && npx prisma migrate deploy && npm run db:seed
+      - name: Build
+        env: { APP_ENV: local }
+        run: npx prisma generate && npx next build
+      - name: E2E gegen Dev-Server
+        env: { APP_ENV: local, ADMIN_EMAIL: ci-admin@lumi.local, CRON_SECRET: ci-cron-secret }
+        run: |
+          npx next dev -p 3100 & 
+          for i in $(seq 1 60); do curl -sf localhost:3100/api/health >/dev/null && break || sleep 2; done
+          npm run e2e
