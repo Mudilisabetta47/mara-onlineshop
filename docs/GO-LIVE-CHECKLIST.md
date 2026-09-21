@@ -36,7 +36,7 @@ Zweck: alles mit **Testschlüsseln** und **Testdaten** durchspielen, ohne die Li
 | # | Punkt | Status | Was du konfigurieren musst |
 |---|---|---|---|
 | S1 | Staging-Datenbank (`shop_staging`) anlegen | ⬜ | Neon/Supabase-Projekt EU; **gepoolte** URL → `DATABASE_URL`, **direkte** → `DIRECT_URL` (beide `sslmode=require`). Nie dieselbe wie Production |
-| S2 | Vercel-Projekt anlegen | ⬜ | Repo verbinden, **Root Directory `shop`**, Node 22, Pro-Plan (Cron, kommerziell) |
+| S2 | Vercel-Projekt anlegen | ⬜ | Repo verbinden, **Root Directory leer** (App im Repo-Root), Node 22, Pro-Plan (Cron, kommerziell) |
 | S3 | Env-Variablen Scope *Preview* | ⬜ | `APP_ENV=staging`, DB-URLs, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (`openssl rand -hex 32`), Storage, Stripe-**Test**, PayPal-**Sandbox**, Resend, Upstash |
 | S4 | Staging-Bucket (privat) | ⬜ | S3/R2-Bucket + Schlüssel nur für diesen Bucket → `S3_*`. Danach prüfen: Bild hochladen (Admin), Testkauf → Rechnung öffnen (beides landet im Bucket) |
 | S5 | Erster Deploy + automatische Migration | 🟡 | Build-Skript vorbereitet (`migrate deploy` über `DIRECT_URL`). Erster Lauf offen |
@@ -69,7 +69,7 @@ Werte aus `.env.production.example` in Vercel → Scope **Production**. Nichts a
 | P2 | `DATABASE_URL` nur über Environment Variables | ✅ Code / ⬜ Eintrag | Repo enthält keine Zugangsdaten (Scan ✅). Du trägst die URLs in Vercel ein |
 | P3 | Prisma-Migration Production | 🟡 | `migrate deploy` im Build vorbereitet; erster Lauf offen. Vorher Snapshot |
 | P4 | Seed Production | 🟡 | `db:seed:base` + `db:seed:admin` mit `CONFIRM_PRODUCTION_SEED=yes` (Anleitung `docs/PRODUCTION.md` §3). **Kein** Demo-Seed (hart blockiert). Danach Admin-Passwort ändern, `ADMIN_PASSWORD` aus der Umgebung entfernen |
-| P5 | Vercel Production-Deployment | ⬜ | Root `shop`, Env-Variablen, `CRON_SECRET`, Region `fra1` (in `vercel.json`) |
+| P5 | Vercel Production-Deployment | ⬜ | Env-Variablen (Root Directory leer), `CRON_SECRET`, Region `fra1` (in `vercel.json`) |
 | P6 | Domain, DNS, HTTPS, `www`-Weiterleitung | ⬜ | Domain in Vercel, `NEXT_PUBLIC_APP_URL=https://www…`. HSTS ist gesetzt |
 | P7 | Storage-Bucket Production | ⬜ | Eigener privater Bucket, Least-Privilege-Schlüssel, Versionierung/Replikation (`docs/BACKUP.md`), `S3_SSE=1` bei AWS |
 | P8 | Backups | 🟡 | Script ✅ + Restore verifiziert. Offen: PITR im DB-Tarif aktivieren, täglicher Offsite-Dump (Workflow-Vorlage in `docs/BACKUP.md`), Bucket-Schutz, **Restore-Übung vor Livegang** |

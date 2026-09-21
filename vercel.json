@@ -5,6 +5,6 @@
   "buildCommand": "node scripts/vercel-build.mjs",
   "regions": ["fra1"],
   "crons": [
-    { "path": "/api/cron/expire-orders", "schedule": "*/10 * * * *" }
+    { "path": "/api/cron/expire-orders", "schedule": "0 3 * * *" }
   ]
 }

@@ -30,7 +30,7 @@ jobs:
       - run: sudo apt-get install -y postgresql-client-16 gnupg awscli
       - run: |
           echo "${{ secrets.BACKUP_GPG_PUBLIC_KEY }}" | gpg --import
-          DIRECT_URL="${{ secrets.PROD_DIRECT_URL }}" BACKUP_DIR=./b BACKUP_GPG_RECIPIENT="${{ vars.BACKUP_GPG_RECIPIENT }}" ./shop/scripts/backup-db.sh
+          DIRECT_URL="${{ secrets.PROD_DIRECT_URL }}" BACKUP_DIR=./b BACKUP_GPG_RECIPIENT="${{ vars.BACKUP_GPG_RECIPIENT }}" ./scripts/backup-db.sh
       - run: aws s3 cp ./b/ "s3://${{ vars.BACKUP_BUCKET }}/db/" --recursive   # anderer Anbieter/Konto als die Production-Daten
         env: { AWS_ACCESS_KEY_ID: "${{ secrets.BACKUP_S3_KEY }}", AWS_SECRET_ACCESS_KEY: "${{ secrets.BACKUP_S3_SECRET }}", AWS_DEFAULT_REGION: eu-central-1 }
 ```

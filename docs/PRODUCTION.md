@@ -7,7 +7,7 @@ Kunde ─► Vercel (Next.js, Region fra1) ─┬─► PostgreSQL (eigene Produ
                                         ├─► S3-Bucket (privat): Rechnungen, Vertragsdokumente, Produktbilder
                                         ├─► Stripe / PayPal (Zahlung; Webhooks → /api/webhooks/stripe)
                                         ├─► Resend (E-Mail)      └─► Upstash Redis (Rate-Limiting)
-Vercel Cron (10 min) ─► /api/cron/expire-orders     Uptime-Monitor ─► /api/health
+Vercel Cron (täglich; Pro: 10 min) ─► /api/cron/expire-orders     Uptime-Monitor ─► /api/health
 ```
 
 Die **lokale Datenbank `lumi_shop` wird nie produktiv verwendet.** Production bekommt eine eigene, neu angelegte Datenbank; es werden **keine lokalen Daten übernommen** (Kategorien/Einstellungen über den Basis-Seed, Produkte legst du im Admin an).
@@ -53,8 +53,8 @@ Danach einloggen (`/login`), **Passwort ändern**, Anbieterdaten unter *Admin �
 
 ## 4 · Vercel
 
-1. Repository verbinden. **Root Directory: `shop`** (im Repo-Root liegt eine fremde Website). Framework: Next.js. Node 22.
-2. `vercel.json` (in `shop/`) setzt Build-Kommando, Region `fra1` und den Cron `*/10 * * * *` für `/api/cron/expire-orders` (gibt Bestandsreservierungen unbezahlter Bestellungen frei). **Hinweis:** Minütliche/10-Minuten-Crons und **kommerzielle Nutzung** erfordern Vercel **Pro**; auf Hobby ist nur täglich erlaubt und kommerzieller Betrieb nicht gestattet.
+1. Repository verbinden. **Root Directory: leer lassen** (die App liegt im Repo-Root). Framework: Next.js. Node 22.
+2. `vercel.json` setzt Build-Kommando, Region `fra1` und einen **täglichen** Cron (`0 3 * * *`, Hobby-kompatibel) für `/api/cron/expire-orders` (gibt Bestandsreservierungen unbezahlter Bestellungen frei; zusätzlich läuft die Freigabe bei jeder neuen Bestellung). **Für den Live-Betrieb auf Vercel Pro** den Zeitplan in `vercel.json` auf `*/10 * * * *` stellen – Hobby erlaubt nur tägliche Crons und **keine kommerzielle Nutzung**.
 3. Environment Variables je Scope eintragen: **Production** ← `.env.production.example`, **Preview** ← `.env.staging.example`. Preview *muss* eigene `DATABASE_URL`/`DIRECT_URL` haben (sonst bricht der Build ab – gewollt).
 4. `CRON_SECRET` setzen → Vercel sendet ihn automatisch an den Cron.
 5. Domain hinzufügen, DNS setzen, `www` ↔ Apex-Weiterleitung, HTTPS ist automatisch. `NEXT_PUBLIC_APP_URL` = kanonische URL.
@@ -66,7 +66,7 @@ Danach einloggen (`/login`), **Passwort ändern**, Anbieterdaten unter *Admin �
 **Live-Konto vorbereiten:** Geschäftsdaten/Identitätsprüfung (KYC) abschließen, Auszahlungskonto hinterlegen, Kontoname/Statement-Descriptor setzen, Zahlungsmethoden aktivieren (Karten, Apple Pay, Google Pay, optional PayPal, SEPA …).
 1. **Schlüssel** (Dashboard → Entwickler → API-Schlüssel, Modus *Live*): `sk_live_…` → `STRIPE_SECRET_KEY`, `pk_live_…` → `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`. Optional Restricted Key mit den Rechten *PaymentIntents (schreiben), Refunds (schreiben), Webhook-Endpoints/Accounts/Payment-Method-Configs (lesen)*.
 2. **Webhook** (Entwickler → Webhooks → Endpoint hinzufügen, Modus *Live*): URL `https://www.deine-domain.de/api/webhooks/stripe`; Events: **`payment_intent.succeeded`**, **`payment_intent.payment_failed`**, **`charge.refunded`**. Signing-Secret `whsec_…` → `STRIPE_WEBHOOK_SECRET`. Der Endpoint prüft die Signatur, gleicht Betrag/Währung ab und ist idempotent; bei Fehlern antwortet er 500 (Stripe wiederholt automatisch).
-3. **Apple Pay:** Dashboard → Einstellungen → Zahlungsmethoden → Apple Pay → Domain hinzufügen; die heruntergeladene Datei nach `shop/public/.well-known/apple-developer-merchantid-domain-association` legen (ohne Endung), deployen, „Verifizieren“. Google Pay erscheint automatisch (Payment Element).
+3. **Apple Pay:** Dashboard → Einstellungen → Zahlungsmethoden → Apple Pay → Domain hinzufügen; die heruntergeladene Datei nach `public/.well-known/apple-developer-merchantid-domain-association` legen (ohne Endung), deployen, „Verifizieren“. Google Pay erscheint automatisch (Payment Element).
 4. **Prüfen:** `STRIPE_SECRET_KEY=sk_live_… NEXT_PUBLIC_APP_URL=https://www.deine-domain.de npm run check:stripe` → prüft Modus, Konto-Freischaltung, Webhook-Endpoint + Events, Zahlarten.
 5. **Test in Staging** mit Testschlüsseln und eigenem Test-Webhook: Karte `4242 4242 4242 4242` (Erfolg), `4000 0027 6000 3184` (3-D-Secure), `4000 0000 0000 9995` (abgelehnt). Lokal: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
 6. **Live-Abnahme:** echte Bestellung mit kleinem Betrag → Order „bezahlt“, Rechnung, Bestätigungsmail → im Shop-Admin *Erstatten* (löst Stripe-Refund aus). Erstattungen im Stripe-Dashboard werden per `charge.refunded` automatisch in den Shop übernommen (Status „Erstattet“, Bestand zurück; Teilerstattungen nur im Audit-Log vermerkt).

@@ -4,12 +4,9 @@ Echter E-Commerce-Shop (kein Mockup): Next.js 15 · React 19 · TypeScript · Ta
 Kategorien: **Junge · Mädchen · Schuhe · Dies & Das**. Der gesamte Kaufprozess läuft gegen die Datenbank:
 Produkt → Variante/Größe → Warenkorb → Checkout → Zahlung → Bestellung → Bestätigung → Kundenkonto → Admin.
 
-> Liegt in `shop/` und ist unabhängig von der bestehenden Website im Repo-Root.
-
 ## Schnellstart (lokal)
 
 ```bash
-cd shop
 cp .env.example .env            # lokale Werte eintragen (.env wird nie eingecheckt)
 createdb lumi_shop              # lokale Entwicklungsdatenbank
 npm install

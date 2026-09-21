@@ -1,0 +1,54 @@
+# Vercel-Schnellstart (erster Testlauf in ~15 Minuten)
+
+Ziel: Den Shop **online öffnen und ausprobieren** (Testumgebung mit Demo-Katalog). Für den echten Live-Betrieb danach `docs/GO-LIVE-CHECKLIST.md` abarbeiten.
+
+Was Vercel **braucht**, damit überhaupt etwas geöffnet werden kann: eine **erreichbare PostgreSQL-Datenbank** und ein paar **Environment Variables**. Ohne beides bricht der Build mit einer klaren Meldung ab (siehe „Fehlerbilder“).
+
+## 1 · Datenbank anlegen (kostenlos, ~3 Min.)
+1. Bei **neon.tech** registrieren → *New Project* → Region **Frankfurt (eu-central-1)**, Name z. B. `mara-shop`.
+2. *Connection Details*: Zwei Strings kopieren
+   - **Pooled connection** (Host enthält `-pooler`) → das wird `DATABASE_URL`; am Ende `&pgbouncer=true&connect_timeout=15` anhängen.
+   - **Direct connection** (Schalter „Pooled connection“ ausschalten) → das wird `DIRECT_URL`.
+   Beide enthalten `?sslmode=require`.
+
+## 2 · Datenbank einmalig füllen (auf deinem Rechner, im Projektordner)
+```bash
+npm install
+export APP_ENV=staging ALLOW_DEMO_SEED=1
+export DATABASE_URL='<pooled-URL>'  DIRECT_URL='<direct-URL>'
+export ADMIN_EMAIL='deine@mail.de'  ADMIN_PASSWORD='<mind. 14 Zeichen, Groß/Klein/Ziffer>'
+npx prisma migrate deploy      # Tabellen anlegen
+npm run db:seed:demo           # Kategorien + Demo-Produkte
+npm run db:seed:admin          # dein Admin-Zugang
+unset DATABASE_URL DIRECT_URL ADMIN_PASSWORD
+```
+(Ein lokales `.env` stört nicht: Variablen aus der Shell haben Vorrang. Der Seed zeigt vorher Host/DB-Name zur Kontrolle.)
+
+## 3 · Vercel-Projekt
+1. vercel.com → *Add New → Project* → Repository `mara-onlineshop` importieren. **Root Directory: leer lassen** (die App liegt im Repo-Root). Framework wird als Next.js erkannt.
+2. *Environment Variables* (Scope **Production**) eintragen:
+
+| Name | Wert |
+|---|---|
+| `APP_ENV` | `staging` *(Testlauf – siehe Hinweis)* |
+| `DATABASE_URL` | gepoolte URL aus Schritt 1 |
+| `DIRECT_URL` | direkte URL aus Schritt 1 |
+| `NEXT_PUBLIC_APP_URL` | `https://<dein-projektname>.vercel.app` (nach dem ersten Deploy korrekt setzen und neu deployen) |
+| `CRON_SECRET` | zufällig, z. B. Ausgabe von `openssl rand -hex 32` |
+
+   Für **Bezahlen** im Checkout zusätzlich (Stripe **Test**modus): `STRIPE_SECRET_KEY` (`sk_test_…`), `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (`pk_test_…`), `STRIPE_WEBHOOK_SECRET` (`whsec_…`, Webhook auf `https://<domain>/api/webhooks/stripe`). Alternativ nach dem Login unter *Admin → Einstellungen* eine IBAN eintragen → „Vorkasse“ ist wählbar.
+3. *Deploy*. Der Build führt selbst `prisma migrate deploy` aus.
+4. Öffnen: `https://<projekt>.vercel.app` (Shop), `/api/health` (muss `"status":"ok"` zeigen), `/login` (Admin).
+
+**Hinweis Testlauf:** `APP_ENV=staging` zeigt einen „Staging“-Badge, sperrt Suchmaschinen und erlaubt Testschlüssel. Ohne S3-Bucket funktionieren Bild-Uploads und Rechnungs-PDFs **nicht** (nur Warnung in staging). Für echte Kunden: `APP_ENV=production` mit den Werten aus `.env.production.example` – siehe Checkliste.
+
+## Fehlerbilder
+| Meldung / Symptom | Ursache | Lösung |
+|---|---|---|
+| Build: „DATABASE_URL und DIRECT_URL müssen … gesetzt sein“ | Variablen fehlen oder falscher Scope | Beide im Scope **Production** (bzw. Preview) setzen |
+| Build: „DIRECT_URL zeigt auf eine lokale Datenbank“ | `localhost`-URL eingetragen | Neon-URL verwenden |
+| Build: `P1001 Can't reach database` | Direct-URL falsch / Neon-Projekt pausiert | URL prüfen, Neon-Dashboard öffnen (weckt die DB) |
+| Seite lädt, aber **HTTP 500** überall | Konfigurations-Wächter: Log in Vercel → *Logs* zeigt `[config:…] FEHLER …` | Genannte Variable korrigieren, neu deployen |
+| Shop leer (keine Produkte) | Seed nicht ausgeführt | Schritt 2 wiederholen |
+| Checkout: „keine Zahlungsart“ | Weder Stripe noch IBAN konfiguriert | Stripe-Testschlüssel setzen oder IBAN im Admin |
+| Deploy abgelehnt: „Hobby accounts are limited to daily cron jobs“ | Cron zu häufig | `vercel.json` steht auf täglich – aktuellen Stand aus GitHub verwenden |

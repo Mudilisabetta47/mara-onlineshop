@@ -27,6 +27,11 @@ test("Stripe-Testkeys in production verboten, Livekeys in staging verboten", () 
 });
 test("Stripe ohne Webhook-Secret ist ein Fehler", () => assert.ok(validateConfig(prod({ STRIPE_WEBHOOK_SECRET: undefined })).errors.some((e) => e.includes("WEBHOOK"))));
 test("Dateisystem-Storage in production verboten", () => assert.ok(validateConfig(prod({ STORAGE_DRIVER: "local" })).errors.some((e) => e.includes("STORAGE_DRIVER"))));
+test("staging auf Vercel ohne S3 ist nur eine Warnung (Testbetrieb), production ein Fehler", () => {
+  const st = validateConfig(prod({ APP_ENV: "staging", STORAGE_DRIVER: "local", VERCEL: "1", STRIPE_SECRET_KEY: "sk_test_x", NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_x" }));
+  assert.ok(!st.errors.some((e) => e.includes("STORAGE_DRIVER")) && st.warnings.some((w) => w.includes("STORAGE_DRIVER")));
+  assert.ok(validateConfig(prod({ STORAGE_DRIVER: "local", VERCEL: "1" })).errors.some((e) => e.includes("STORAGE_DRIVER")));
+});
 test("PayPal live/sandbox je Umgebung", () => assert.ok(validateConfig(prod({ PAYPAL_CLIENT_ID: "a", PAYPAL_CLIENT_SECRET: "b", PAYPAL_ENV: "sandbox" })).errors.some((e) => e.includes("PAYPAL_ENV"))));
 test("localhost-URL und Mail-Beispieldomain abgelehnt", () => {
   const r = validateConfig(prod({ NEXT_PUBLIC_APP_URL: "http://localhost:3000", MAIL_FROM: "x <a@example.com>" }));

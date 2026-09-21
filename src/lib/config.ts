@@ -66,8 +66,11 @@ export function validateConfig(e: NodeJS.ProcessEnv = process.env): ConfigReport
 
   // ── Storage ──
   const driver = e.STORAGE_DRIVER ?? "local";
-  if (driver !== "s3" && (e.VERCEL || env === "production"))
-    errors.push("STORAGE_DRIVER=s3 ist Pflicht (Vercel-Dateisystem ist flüchtig/schreibgeschützt: Uploads und Rechnungen gingen verloren).");
+  if (driver !== "s3" && (e.VERCEL || env === "production")) {
+    const msg = "STORAGE_DRIVER=s3 ist Pflicht (Vercel-Dateisystem ist flüchtig/schreibgeschützt: Uploads und Rechnungen gingen verloren).";
+    // Production: harter Fehler. Staging-Testlauf auf Vercel: Warnung – Shop ist nutzbar, Uploads/Rechnungs-PDFs funktionieren dort aber nicht.
+    (env === "production" ? errors : warnings).push(env === "production" ? msg : msg.replace("ist Pflicht", "fehlt") + " (Staging: nur Testbetrieb ohne Uploads/Rechnungen)");
+  }
   if (driver === "s3") for (const k of ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"]) if (!e[k]) errors.push(`${k} fehlt (STORAGE_DRIVER=s3).`);
 
   // ── E-Mail ──
